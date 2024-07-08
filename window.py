@@ -10,6 +10,11 @@ class AppWindow(QWidget):
         ret, frame = self.cap.read()
         self.setFixedSize(frame.shape[1], frame.shape[0])
         self.camera = AppCamera(self)
+        
+        self.info = QFrame(self)
+        self.info.setFixedSize(200, 100)
+        self.info.setStyleSheet('background-color: #ddd; color: black;')
+        self.info.move(20, self.height() - self.info.height() - 20)
 
         
 class AppCamera(QFrame):
@@ -54,5 +59,6 @@ class AppCamera(QFrame):
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
-        result_frame = self.detect_faces(frame)
-        self.image.setImage(result_frame)
+        detected_frame = self.detect_faces(frame)
+        detected_frame = cv2.flip(detected_frame, 1)
+        self.image.setImage(detected_frame)
