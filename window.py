@@ -4,37 +4,13 @@ import cv2
 class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.WindowType.Window)
         
         self.cap = cv2.VideoCapture(0)
-        
-        self.layout_window = AppStackLayout()
-        self.setLayout(self.layout_window)
-        
-        self.titlebar = AppTitlebar(self)
-        self.layout_window.addWidget(self.titlebar)
-        
-        self.content = AppCamera(self)
-        self.layout_window.addWidget(self.content)
-        
-        self.statusbar = AppStatusbar(self)
-        self.layout_window.addWidget(self.statusbar)
-        
-        
-class AppTitlebar(QFrame):
-    def __init__(self, parent: QWidget):
-        super().__init__(parent)
-        self.setFixedHeight(50)
-        self.setStyleSheet('background-color: #aaa; color: white;')
-    
-        
-class AppStatusbar(QFrame):
-    def __init__(self, parent: QWidget):
-        super().__init__(parent)
-        self.setFixedHeight(50)
-        self.setStyleSheet('background-color: #aaa; color: white;')
-        
+        ret, frame = self.cap.read()
+        self.setFixedSize(frame.shape[1], frame.shape[0])
+        self.camera = AppCamera(self)
+
         
 class AppCamera(QFrame):
     def __init__(self, parent: QWidget):
@@ -49,19 +25,21 @@ class AppCamera(QFrame):
         
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_image)
-        self.timer.start(100)
+        self.timer.start(50)
         self.update_image()
 
     def detect_faces(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
-
+        
+        color = ColorBRG.GREEN
         for x, y, w, h in faces:
             c = (x + w // 2, y + h // 2)
             rect = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
             rotated_rect = [self.rotate_point(c, pt, 45) for pt in rect]
             rotated_rect = np.array(rotated_rect, np.int32).reshape((-1, 1, 2))
-            cv2.polylines(frame, [rotated_rect], isClosed=True, color=(255, 255, 0), thickness=2)
+            cv2.polylines(frame, [rotated_rect], isClosed=True, color=color, thickness=2)
+            color = ColorBRG.CYAN
 
         return frame
     
