@@ -1,5 +1,7 @@
+import celeb_detector.celeb_recognition
 from ui_bricks import *
 import cv2
+import celeb_detector
 
 class AppWindow(QWidget):
     def __init__(self):
@@ -59,6 +61,9 @@ class AppCamera(QFrame):
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
+        cv2.imwrite("frame.jpg", frame)
+        celebs = celeb_detector.celeb_recognition("frame.jpg")
         detected_frame = self.detect_faces(frame)
         detected_frame = cv2.flip(detected_frame, 1)
         self.image.setImage(detected_frame)
+        print(celebs)
