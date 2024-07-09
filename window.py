@@ -10,7 +10,7 @@ class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.Window)
-        self.setFixedSize(640, 480)
+        self.setFixedSize(480, 640)
         
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
@@ -76,6 +76,7 @@ class AppCamera(QFrame):
         ret, frame = self.parent().cap.read()
         frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         
         face_img = frame.copy()
         cam_img, rect = self.detect_faces(frame)
