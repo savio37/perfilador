@@ -90,7 +90,7 @@ class AppCamera(QFrame):
 class AppInfoCard(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
-        self.setFixedSize(200, 100)
+        self.setFixedSize(self.parent().width() - 40, 100)
         self.setStyleSheet('background-color: #ddd; color: black;')
         
         self.image = AppImage()
