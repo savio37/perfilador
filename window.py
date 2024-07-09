@@ -44,46 +44,50 @@ class AppCamera(QFrame):
         self.update_image()
 
     def detect_faces(self, frame):
-        faces = face_recognition.face_locations(frame, model='hog')
+        small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        faces = face_recognition.face_locations(small_frame, model='hog')
         
         color = Color.CYAN
         for top, right, bottom, left in faces:
  
-            top, right, bottom, left = top * 0.9, right * 1.1, bottom * 1.1, left * 0.9
+            top, right, bottom, left = top * 1.8, right * 2.2, bottom * 2.2, left * 1.8
             cx, cy = (left + right) // 2, (top + bottom) // 2
-            size = 8
+            marker_size = 15
             
-            points = [(cx - size, top + size), (cx, top), (cx + size, top + size)]
+            points = [(cx - marker_size, top + marker_size), (cx, top), (cx + marker_size, top + marker_size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             
-            points = [(right - size, cy - size), (right, cy), (right - size, cy + size)]
+            points = [(right - marker_size, cy - marker_size), (right, cy), (right - marker_size, cy + marker_size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             
-            points = [(cx + size, bottom - size), (cx, bottom), (cx - size, bottom - size)]
+            points = [(cx + marker_size, bottom - marker_size), (cx, bottom), (cx - marker_size, bottom - marker_size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             
-            points = [(left + size, cy + size), (left, cy), (left + size, cy - size)]
+            points = [(left + marker_size, cy + marker_size), (left, cy), (left + marker_size, cy - marker_size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             color = Color.BLUE
+            
+            name = f'Unknown'
+            name_pos = (int(cx - len(name) * 7.5), int(top - 20))
+            cv2.putText(frame, name, name_pos, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75, color=Color.WHITE, thickness=2)
 
         return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0)
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
-        frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         
         face_img = frame.copy()
-        cam_img, rect = self.detect_faces(frame)
+        cam_img, face_pos = self.detect_faces(frame)
         self.image.setImage(cam_img)
         
-        top, right, bottom, left = rect
-        face_img = face_img[top:bottom, left:right].copy()
+        top, right, bottom, left = face_pos
+        face_img = face_img[top*2:bottom*2, left*2:right*2].copy()
         self.parent().info_card.setImage(face_img)
         
         
