@@ -10,7 +10,7 @@ class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.Window)
-        self.setMinimumSize(640, 480)
+        self.setFixedSize(640, 480)
         
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
