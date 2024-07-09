@@ -10,11 +10,16 @@ class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.Window)
+        self.setMinimumSize(640, 480)
         
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
-        self.setFixedSize(frame.shape[1], frame.shape[0])
+        
         self.camera = AppCamera(self)
+        self.layout_content = QBoxLayout(QBoxLayout.Direction.TopToBottom)
+        self.layout_content.setContentsMargins(0, 0, 0, 0)
+        self.layout_content.addWidget(self.camera)
+        self.setLayout(self.layout_content)
         
         self.info_card = QFrame(self)
         self.info_card.setFixedSize(200, 100)
@@ -43,19 +48,36 @@ class AppCamera(QFrame):
         
         color = Color.CYAN
         for top, right, bottom, left in faces:
+ 
+            top, right, bottom, left = top * 0.9, right * 1.1, bottom * 1.1, left * 0.9
             cx, cy = (left + right) // 2, (top + bottom) // 2
-            points = [(cx, top), (right, cy), (cx, bottom), (left, cy)]
+            size = 8
+            
+            points = [(cx - size, top + size), (cx, top), (cx + size, top + size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
-            cv2.polylines(frame, [points], isClosed=True, color=color, thickness=2)
+            cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
+            
+            points = [(right - size, cy - size), (right, cy), (right - size, cy + size)]
+            points = np.array(points, np.int32).reshape((-1, 1, 2))
+            cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
+            
+            points = [(cx + size, bottom - size), (cx, bottom), (cx - size, bottom - size)]
+            points = np.array(points, np.int32).reshape((-1, 1, 2))
+            cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
+            
+            points = [(left + size, cy + size), (left, cy), (left + size, cy - size)]
+            points = np.array(points, np.int32).reshape((-1, 1, 2))
+            cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             color = Color.BLUE
 
         return frame
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
-        detected_frame = self.detect_faces(frame)
-        #detected_frame = cv2.flip(detected_frame, 1)
-        self.image.setImage(detected_frame)
+        frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = self.detect_faces(frame)
+        self.image.setImage(frame)
         
         
 class AppImage(QLabel):
@@ -66,5 +88,5 @@ class AppImage(QLabel):
     def setImage(self, array: np.ndarray):
         height, width, channel = array.shape
         bytesPerLine = 3 * width
-        qImg = QImage(array.data, width, height, bytesPerLine, QImage.Format.Format_BGR888)
+        qImg = QImage(array.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
         self.setPixmap(QPixmap.fromImage(qImg))
