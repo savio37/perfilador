@@ -10,7 +10,7 @@ class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.Window)
-        self.setFixedSize(480, 640)
+        self.setFixedSize(640, 480)
         
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
@@ -58,10 +58,6 @@ class AppCamera(QFrame):
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             
-            points = [(right - marker_size, cy - marker_size), (right, cy), (right - marker_size, cy + marker_size)]
-            points = np.array(points, np.int32).reshape((-1, 1, 2))
-            cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
-            
             points = [(cx + marker_size, bottom - marker_size), (cx, bottom), (cx - marker_size, bottom - marker_size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
@@ -69,18 +65,23 @@ class AppCamera(QFrame):
             points = [(left + marker_size, cy + marker_size), (left, cy), (left + marker_size, cy - marker_size)]
             points = np.array(points, np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
-            color = Color.BLUE
+            
+            points = [(right - marker_size, cy - marker_size), (right, cy), (right - marker_size, cy + marker_size)]
+            points = np.array(points, np.int32).reshape((-1, 1, 2))
+            cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             
             name = f'Unknown'
-            name_pos = (int(cx - len(name) * 7.5), int(top - 20))
+            name_size = cv2.getTextSize(name, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75, thickness=2)[0][0]
+            name_pos = (int(cx - name_size / 2), int(top - 20))
             cv2.putText(frame, name, name_pos, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75, color=Color.WHITE, thickness=2)
 
+            color = Color.LIGHT_GRAY
+            
         return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0)
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         
         face_img = frame.copy()
         cam_img, face_pos = self.detect_faces(frame)
@@ -94,11 +95,11 @@ class AppCamera(QFrame):
 class AppInfoCard(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
-        self.setFixedSize(self.parent().width() - 40, 100)
+        self.setFixedSize(200, 70)
         self.setStyleSheet('background-color: #ddd; color: black;')
         
         self.image = AppImage()
-        self.image.setFixedSize(80, 80)
+        self.image.setFixedSize(50, 50)
         
         self.layout_info = QBoxLayout(QBoxLayout.Direction.TopToBottom)
         self.layout_info.setContentsMargins(10, 10, 10, 10)
