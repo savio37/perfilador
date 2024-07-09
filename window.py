@@ -15,15 +15,15 @@ class AppWindow(QWidget):
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
         
+        self.info_card = AppInfoCard(self)
+        
         self.camera = AppCamera(self)
         self.layout_content = QBoxLayout(QBoxLayout.Direction.TopToBottom)
         self.layout_content.setContentsMargins(0, 0, 0, 0)
         self.layout_content.addWidget(self.camera)
         self.setLayout(self.layout_content)
         
-        self.info_card = QFrame(self)
-        self.info_card.setFixedSize(200, 100)
-        self.info_card.setStyleSheet('background-color: #ddd; color: black;')
+        self.info_card = AppInfoCard(self)
         self.info_card.move(20, self.height() - self.info_card.height() - 20)
 
         
@@ -70,14 +70,38 @@ class AppCamera(QFrame):
             cv2.polylines(frame, [points], isClosed=False, color=color, thickness=2)
             color = Color.BLUE
 
-        return frame
+        return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0)
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
         frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = self.detect_faces(frame)
-        self.image.setImage(frame)
+        
+        face_img = frame.copy()
+        cam_img, rect = self.detect_faces(frame)
+        self.image.setImage(cam_img)
+        
+        top, right, bottom, left = rect
+        face_img = face_img[top:bottom, left:right].copy()
+        self.parent().info_card.setImage(face_img)
+        
+        
+class AppInfoCard(QFrame):
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setFixedSize(200, 100)
+        self.setStyleSheet('background-color: #ddd; color: black;')
+        
+        self.image = AppImage()
+        self.image.setFixedSize(80, 80)
+        
+        self.layout_info = QBoxLayout(QBoxLayout.Direction.TopToBottom)
+        self.layout_info.setContentsMargins(10, 10, 10, 10)
+        self.layout_info.addWidget(self.image)
+        self.setLayout(self.layout_info)
+        
+    def setImage(self, array: np.ndarray):
+        self.image.setImage(array)
         
         
 class AppImage(QLabel):
