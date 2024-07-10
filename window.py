@@ -49,8 +49,8 @@ class AppCamera(QFrame):
         for top, right, bottom, left in faces:
             top, right, bottom, left = top * 1.8, right * 2.2, bottom * 2.2, left * 1.8
             face_rect = (top, right, bottom, left)
-            Geometry.draw_face_marker(frame, face_rect, color)
-            Geometry.draw_face_name(frame, face_rect, 'Unknown')
+            Drawing.face_marker(frame, face_rect, color)
+            Drawing.face_name(frame, face_rect, 'Unknown')
             
             color = Color.LIGHT_GRAY
             

@@ -8,9 +8,9 @@ class Color:
     WHITE = (255, 255, 255)
     
     
-class Geometry:
+class Drawing:
     @staticmethod
-    def draw_face_marker(frame:np.ndarray, face_rect:tuple, color:Color=Color.LIGHT_GRAY, size:int=15):
+    def face_marker(frame:np.ndarray, face_rect:tuple, color:Color=Color.LIGHT_GRAY, size:int=15):
         top, right, bottom, left = face_rect
         cx, cy = (left + right) // 2, (top + bottom) // 2
         
@@ -32,7 +32,7 @@ class Geometry:
         
         
     @staticmethod
-    def draw_face_name(frame:np.ndarray, face_rect:tuple, name:str, color:Color=Color.WHITE):
+    def face_name(frame:np.ndarray, face_rect:tuple, name:str, color:Color=Color.WHITE):
         top, right, bottom, left = face_rect
         
         font = cv2.FONT_HERSHEY_SIMPLEX
