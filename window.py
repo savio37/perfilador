@@ -48,13 +48,10 @@ class AppCamera(QFrame):
         color = Color.CYAN
         for top, right, bottom, left in faces:
             top, right, bottom, left = top * 1.8, right * 2.2, bottom * 2.2, left * 1.8
-            Geometry.draw_face_marker(frame, top, right, bottom, left, color, size=15)
             
-            name = f'Unknown'
-            name_size = cv2.getTextSize(name, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75, thickness=2)[0][0]
-            name_pos = (int((left + right - name_size) / 2), int(top - 20))
-            cv2.putText(frame, name, name_pos, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75, color=Color.WHITE, thickness=2)
-
+            Geometry.draw_face_marker(frame, top, right, bottom, left, color)
+            Geometry.draw_face_name(frame, top, right, bottom, left, 'Unknown')
+            
             color = Color.LIGHT_GRAY
             
         return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0)
