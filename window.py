@@ -48,9 +48,9 @@ class AppCamera(QFrame):
         color = Color.CYAN
         for top, right, bottom, left in faces:
             top, right, bottom, left = top * 1.8, right * 2.2, bottom * 2.2, left * 1.8
-            
-            Geometry.draw_face_marker(frame, top, right, bottom, left, color)
-            Geometry.draw_face_name(frame, top, right, bottom, left, 'Unknown')
+            face_rect = (top, right, bottom, left)
+            Geometry.draw_face_marker(frame, face_rect, color)
+            Geometry.draw_face_name(frame, face_rect, 'Unknown')
             
             color = Color.LIGHT_GRAY
             
