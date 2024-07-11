@@ -28,7 +28,6 @@ class AppWindow(QWidget):
 class AppCamera(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
-        self.setStyleSheet('background-color: #eee; color: black;')
         
         self.image = AppImage()
         self.layout_camera = QBoxLayout(QBoxLayout.Direction.TopToBottom)
@@ -61,10 +60,10 @@ class AppCamera(QFrame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
         face_img = frame.copy()
-        cam_img, face_pos = self.detect_faces(frame)
+        cam_img, face_rect = self.detect_faces(frame)
         self.image.setImage(cam_img)
         
-        top, right, bottom, left = face_pos
+        top, right, bottom, left = face_rect
         face_img = face_img[top*2:bottom*2, left*2:right*2].copy()
         self.parent().info_card.setImage(face_img)
         
