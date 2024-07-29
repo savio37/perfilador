@@ -55,30 +55,27 @@ class AppCamera(QFrame):
         small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
         faces = face_recognition.face_locations(small_frame, model='hog')
         
-        names = []
+        name = "???"
         
         if len(faces) > 0:
-            face_encodings = face_recognition.face_encodings(small_frame, faces, model='small')
-            for face_encoding in face_encodings:
-                face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
-                face_distances = list(face_distances)
-                
-                if min(face_distances) < 0.6:
-                    names.append(self.known_names[face_distances.index(min(face_distances))])
-                else:
-                    names.append('???')
+            face_encoding = face_recognition.face_encodings(small_frame, [faces[0]], model='small')[0]
+            face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
+            face_distances = list(face_distances)
+            
+            if min(face_distances) < 0.6:
+                name = self.known_names[face_distances.index(min(face_distances))]
         
         color = Color.CYAN
-        for i, rect in enumerate(faces):
-            top, right, bottom, left = rect
+        for top, right, bottom, left in faces:
             top, right, bottom, left = top * 1.8, right * 2.2, bottom * 2.2, left * 1.8
             face_rect = (top, right, bottom, left)
             Drawing.face_marker(frame, face_rect, color)
-            Drawing.face_name(frame, face_rect, names[i])
+            if color == Color.CYAN:
+                Drawing.face_name(frame, face_rect, name.split(' ')[0])
             
             color = Color.LIGHT_GRAY
             
-        return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0), names[0] if len(names) > 0 else '???'
+        return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0), name
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
@@ -105,11 +102,11 @@ class AppInfoCard(QFrame):
         self.image.setFixedSize(80, 80)
         
         self.label_name = QLabel('???')
-        self.label_name.setStyleSheet('font-size: 20px; font-weight: bold;')
+        self.label_name.setStyleSheet('font-size: 18px; font-weight: bold;')
         
         self.layout_info = QGridLayout()
         self.layout_info.setContentsMargins(10, 10, 10, 10)
-        self.layout_info.addWidget(self.image, 0, 0, 2, 1)
+        self.layout_info.addWidget(self.image, 0, 0, 3, 1)
         self.layout_info.addWidget(self.label_name, 0, 1, 1, 1)
         self.setLayout(self.layout_info)
         
