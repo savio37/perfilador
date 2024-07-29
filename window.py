@@ -56,12 +56,10 @@ class AppCamera(QFrame):
         faces = face_recognition.face_locations(small_frame, model='hog')
         
         name = "???"
-        
         if len(faces) > 0:
             face_encoding = face_recognition.face_encodings(small_frame, [faces[0]], model='small')[0]
             face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
             face_distances = list(face_distances)
-            
             if min(face_distances) < 0.6:
                 name = self.known_names[face_distances.index(min(face_distances))]
         
