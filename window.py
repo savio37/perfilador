@@ -9,7 +9,6 @@ class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.Window)
-        self.setFixedSize(960, 720)
         
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
@@ -23,7 +22,7 @@ class AppWindow(QWidget):
         self.setLayout(self.layout_content)
         
         self.info_card = AppInfoCard(self)
-        self.info_card.move(20, self.height() - self.info_card.height() - 20)
+        self.info_card.move(int((self.width() - self.info_card.width())/2), self.height() - self.info_card.height() - 20)
 
         
 class AppCamera(QFrame):
@@ -45,11 +44,12 @@ class AppCamera(QFrame):
         self.known_names = []
         
         for file in os.listdir('img'):
-            if file.endswith('.png') or file.endswith('.jpg'):
+            if file.endswith('.png'):
                 image = face_recognition.load_image_file(f'img/{file}')
                 encoding = face_recognition.face_encodings(image)[0]
                 self.known_encodings.append(encoding)
                 self.known_names.append(file.split('.')[0])
+                
 
     def detect_faces(self, frame):
         small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
@@ -88,33 +88,35 @@ class AppCamera(QFrame):
         
         top, right, bottom, left = face_rect
         face_img = face_img[top*2:bottom*2, left*2:right*2].copy()
-        self.parent().info_card.setImage(face_img)
-        self.parent().info_card.setInfo(face_name)
+        self.parent().info_card.setInfo(face_img, face_name)
         
         
 class AppInfoCard(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setFixedSize(300, 100)
-        self.setStyleSheet('background-color: #111; color: white; font-family: Lexend;')
+        self.setStyleSheet('background-color: #111; color: white; font-family: Lexend; font-size: 16px;')
         
         self.image = AppImage()
         self.image.setFixedSize(80, 80)
         
         self.label_name = QLabel('???')
         self.label_name.setStyleSheet('font-size: 18px; font-weight: bold;')
+        self.label_age = QLabel('35 anos')
+        self.label_profession = QLabel('Web Developer')
         
         self.layout_info = QGridLayout()
         self.layout_info.setContentsMargins(10, 10, 10, 10)
         self.layout_info.addWidget(self.image, 0, 0, 3, 1)
         self.layout_info.addWidget(self.label_name, 0, 1, 1, 1)
+        self.layout_info.addWidget(self.label_age, 1, 1, 1, 1)
+        self.layout_info.addWidget(self.label_profession, 2, 1, 1, 1)
         self.setLayout(self.layout_info)
-        
-    def setImage(self, array: np.ndarray):
-        self.image.setImage(array)
-        
-    def setInfo(self, name: str):
+
+    def setInfo(self, img: np.ndarray, name: str):
+        self.image.setImage(img)
         self.label_name.setText(name)
+        self.hide() if name == '???' else self.show()
         
         
 class AppImage(QLabel):
