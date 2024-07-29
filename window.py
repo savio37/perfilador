@@ -74,8 +74,11 @@ class AppCamera(QFrame):
                 Drawing.face_name(frame, face_rect, name.split(' ')[0])
             
             color = Color.LIGHT_GRAY
+        
+        face_rect = faces[0] if len(faces) > 0 else (0, 0, 0, 0)
+        face_info = db.get_info(name)[0] if name != '???' else ('???', 0, '', '')
             
-        return frame, faces[0] if len(faces) > 0 else (0, 0, 0, 0), name
+        return frame, face_rect, face_info
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
@@ -83,12 +86,12 @@ class AppCamera(QFrame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
         face_img = frame.copy()
-        cam_img, face_rect, face_name = self.detect_faces(frame)
+        cam_img, face_rect, face_info = self.detect_faces(frame)
         self.image.setImage(cam_img)
         
         top, right, bottom, left = face_rect
         face_img = face_img[top*2:bottom*2, left*2:right*2].copy()
-        self.parent().info_card.setInfo(face_img, face_name)
+        self.parent().info_card.setInfo(face_img, face_info)
         
         
 class AppInfoCard(QFrame):
@@ -102,20 +105,27 @@ class AppInfoCard(QFrame):
         
         self.label_name = QLabel('???')
         self.label_name.setStyleSheet('font-size: 18px; font-weight: bold;')
-        self.label_age = QLabel('35 anos')
-        self.label_profession = QLabel('Web Developer')
+        self.label_pronouns = QLabel('')
+        self.label_pronouns.setStyleSheet('font-size: 14px;')
+        self.label_age = QLabel('')
+        self.label_profession = QLabel('')
         
         self.layout_info = QGridLayout()
         self.layout_info.setContentsMargins(10, 10, 10, 10)
         self.layout_info.addWidget(self.image, 0, 0, 3, 1)
         self.layout_info.addWidget(self.label_name, 0, 1, 1, 1)
+        self.layout_info.addWidget(self.label_pronouns, 0, 2, 1, 1)
         self.layout_info.addWidget(self.label_age, 1, 1, 1, 1)
         self.layout_info.addWidget(self.label_profession, 2, 1, 1, 1)
         self.setLayout(self.layout_info)
 
-    def setInfo(self, img: np.ndarray, name: str):
+    def setInfo(self, img: np.ndarray, info:tuple):
+        name, age, pronouns, profession = info
         self.image.setImage(img)
         self.label_name.setText(name)
+        self.label_age.setText(f'{age} anos')
+        self.label_pronouns.setText(pronouns)
+        self.label_profession.setText(profession)
         self.hide() if name == '???' else self.show()
         
         
