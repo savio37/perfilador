@@ -95,7 +95,7 @@ class AppInfoCard(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setFixedSize(300, 100)
-        self.setStyleSheet('background-color: #111; color: white; font-family: Lexend; font-size: 16px;')
+        self.setStyleSheet('border-radius:5px; background-color: #111; color: white; font-family: Lexend; font-size: 16px;')
         
         self.image = AppImage()
         self.image.setFixedSize(80, 80)
