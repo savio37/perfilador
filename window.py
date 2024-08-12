@@ -44,7 +44,7 @@ class AppCamera(QFrame):
         self.known_names = []
         
         for file in os.listdir('img'):
-            if file.endswith('.png'):
+            if file.endswith('.jpg'):
                 image = face_recognition.load_image_file(f'img/{file}')
                 encoding = face_recognition.face_encodings(image)[0]
                 self.known_encodings.append(encoding)
@@ -114,13 +114,13 @@ class AppInfoCard(QFrame):
         self.layout_info.addWidget(self.label_name, 0, 1, 1, 1)
         self.layout_info.addWidget(self.label_pronouns, 0, 2, 1, 1)
         self.layout_info.addWidget(self.label_age, 1, 1, 1, 1)
-        self.layout_info.addWidget(self.label_profession, 2, 1, 1, 1)
+        self.layout_info.addWidget(self.label_profession, 2, 1, 1, 2)
         self.setLayout(self.layout_info)
 
     def setInfo(self, img: np.ndarray, info:tuple):
         name, age, pronouns, profession = info
         self.image.setImage(img)
-        self.label_name.setText(name)
+        self.label_name.setText(name.split(' ')[0] + ' ' + name.split(' ')[-1][:1] + '.')
         self.label_age.setText(f'{age} anos')
         self.label_pronouns.setText(pronouns)
         self.label_profession.setText(profession)
