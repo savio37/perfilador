@@ -5,6 +5,7 @@ from tools import *
 import face_recognition
 import os
 
+
 class AppWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -30,7 +31,9 @@ class AppCamera(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.focus_name = '???'
-        self.match_id_step = 0
+        self.detect = 0
+        self.small_frame = None
+        self.faces = None
         
         self.image = AppImage()
         self.layout_camera = QBoxLayout(QBoxLayout.Direction.TopToBottom)
@@ -50,18 +53,23 @@ class AppCamera(QFrame):
                 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_image)
-        self.timer.start(100)
+        self.timer.start(25)
         self.update_image()
+        
+        self.timer_identify = QTimer(self)
+        self.timer_identify.timeout.connect(self.identify_face)
+        self.timer_identify.start(1000)
                 
 
-    def detect_faces(self, frame, match_id:bool):
-        small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-        faces = face_recognition.face_locations(small_frame, model='hog')
-        if match_id:
-            self.identify_face(small_frame, faces)
+    def detect_faces(self, frame):
+        self.small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        self.detect -= 1
+        if self.detect <= 0:
+            self.faces = face_recognition.face_locations(self.small_frame, model='hog')
+            self.detect = 3
         
         color = Color.CYAN
-        for top, right, bottom, left in faces:
+        for top, right, bottom, left in self.faces:
             top, right, bottom, left = top * 1.8, right * 2.2, bottom * 2.2, left * 1.8
             face_rect = (top, right, bottom, left)
             Drawing.face_marker(frame, face_rect, color)
@@ -70,32 +78,27 @@ class AppCamera(QFrame):
             
             color = Color.LIGHT_GRAY
         
-        face_rect = faces[0] if len(faces) > 0 else (0, 0, 0, 0)
+        face_rect = self.faces[0] if len(self.faces) > 0 else (0, 0, 0, 0)
         face_info = db.get_info(self.focus_name)[0] if self.focus_name != '???' else ('???', 0, '', '')
 
         return frame, face_rect, face_info
     
-    def identify_face(self, frame, faces):
+    def identify_face(self):
         self.focus_name = "???"
-        if len(faces) > 0:
-            face_encoding = face_recognition.face_encodings(frame, faces, model='small')[0]
-            face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
+        if len(self.faces) > 0:
+            self.face_encoding = face_recognition.face_encodings(self.small_frame, self.faces, model='small')[0]
+            face_distances = face_recognition.face_distance(self.known_encodings, self.face_encoding)
             face_distances = list(face_distances)
             if min(face_distances) < 0.6:
                 self.focus_name = self.known_names[face_distances.index(min(face_distances))]
         
     def update_image(self):
         ret, frame = self.parent().cap.read()
-        frame = cv2.flip(frame, 1)
+        #frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
         face_img = frame.copy()
-        match_id = False
-        self.match_id_step -= 1
-        if self.match_id_step <= 0:
-            match_id = True
-            self.match_id_step = 5
-        cam_img, face_rect, face_info = self.detect_faces(frame, match_id)
+        cam_img, face_rect, face_info = self.detect_faces(frame)
         
         self.image.setImage(cam_img)
         
@@ -150,3 +153,4 @@ class AppImage(QLabel):
         bytesPerLine = 3 * width
         qImg = QImage(array.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
         self.setPixmap(QPixmap.fromImage(qImg))
+        
